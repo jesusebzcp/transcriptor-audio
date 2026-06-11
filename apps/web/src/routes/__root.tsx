@@ -16,17 +16,17 @@ export const Route = createRootRouteWithContext<{
   notFoundComponent: () => (
     <div className='flex min-h-screen items-center justify-center p-6'>
       <div className='text-center'>
-        <h1 className='text-2xl font-bold'>Not found</h1>
-        <p className='text-muted-foreground'>Page not found.</p>
+        <h1 className='text-2xl font-bold'>No encontrado</h1>
+        <p className='text-muted-foreground'>Pagina no encontrada.</p>
       </div>
     </div>
   ),
   errorComponent: () => (
     <div className='flex min-h-screen items-center justify-center p-6'>
       <div className='text-center'>
-        <h1 className='text-2xl font-bold'>Something went wrong</h1>
+        <h1 className='text-2xl font-bold'>Algo salio mal</h1>
         <p className='text-muted-foreground'>
-          Please refresh or try again later.
+          Refresca la pagina o intenta de nuevo mas tarde.
         </p>
       </div>
     </div>

@@ -14,7 +14,7 @@ async def lifespan(_: FastAPI):
     yield
 
 
-app = FastAPI(title="Transcriptor Audio API", version="1.0.0", lifespan=lifespan)
+app = FastAPI(title="Coding Power API", version="1.0.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,

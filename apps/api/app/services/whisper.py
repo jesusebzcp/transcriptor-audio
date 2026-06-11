@@ -1,4 +1,3 @@
-from functools import lru_cache
 from threading import Lock
 
 from faster_whisper import WhisperModel
@@ -10,22 +9,25 @@ _model: WhisperModel | None = None
 _cached_signature: tuple | None = None
 
 
-def _signature(settings: Settings) -> tuple:
+def _signature(settings: Settings, model_name: str | None = None) -> tuple:
     return (
-        settings.whisper_model,
+        model_name or settings.whisper_model,
         settings.whisper_device,
         settings.whisper_compute_type,
     )
 
 
-def get_whisper_model(settings: Settings | None = None) -> WhisperModel:
+def get_whisper_model(
+    settings: Settings | None = None,
+    model_name: str | None = None,
+) -> WhisperModel:
     global _model, _cached_signature
     settings = settings or get_settings()
-    sig = _signature(settings)
+    sig = _signature(settings, model_name)
     with _lock:
         if _model is None or _cached_signature != sig:
             _model = WhisperModel(
-                settings.whisper_model,
+                model_name or settings.whisper_model,
                 device=settings.whisper_device,
                 compute_type=settings.whisper_compute_type,
             )

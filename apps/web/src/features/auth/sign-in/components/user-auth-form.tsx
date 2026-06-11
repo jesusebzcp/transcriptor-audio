@@ -22,9 +22,9 @@ import { PasswordInput } from '@/components/password-input'
 
 const formSchema = z.object({
   email: z.email({
-    error: (iss) => (iss.input === '' ? 'Please enter your email.' : undefined),
+    error: (iss) => (iss.input === '' ? 'Ingresa tu correo.' : undefined),
   }),
-  password: z.string().min(1, 'Please enter your password.'),
+  password: z.string().min(1, 'Ingresa tu contrasena.'),
 })
 
 type UserAuthFormProps = React.HTMLAttributes<HTMLFormElement>
@@ -63,13 +63,13 @@ export function UserAuthForm({
         // eslint-disable-next-line react-hooks/purity
         exp: Math.floor(Date.now() / 1000) + 24 * 60 * 60,
       })
-      toast.success(`Welcome, ${user.email}!`)
+      toast.success(`Bienvenido, ${user.email}!`)
       navigate({ to: '/', replace: true })
     } catch (err) {
       const message =
         axios.isAxiosError(err) && err.response?.status === 401
-          ? 'Invalid email or password'
-          : 'Sign in failed'
+          ? 'Correo o contrasena incorrectos'
+          : 'No se pudo iniciar sesion'
       toast.error(message)
     } finally {
       setIsLoading(false)
@@ -101,7 +101,7 @@ export function UserAuthForm({
           name='password'
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Password</FormLabel>
+              <FormLabel>Contrasena</FormLabel>
               <FormControl>
                 <PasswordInput placeholder='********' {...field} />
               </FormControl>
@@ -111,7 +111,7 @@ export function UserAuthForm({
         />
         <Button className='mt-2' disabled={isLoading}>
           {isLoading ? <Loader2 className='animate-spin' /> : <LogIn />}
-          Sign in
+          Iniciar sesion
         </Button>
       </form>
     </Form>

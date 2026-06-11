@@ -77,7 +77,7 @@ export function NavUser({ user }: NavUserProps) {
               onClick={handleSignOut}
             >
               <LogOut />
-              Sign out
+              Cerrar sesion
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

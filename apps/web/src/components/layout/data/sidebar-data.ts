@@ -1,53 +1,32 @@
-import {
-  LayoutDashboard,
-  HelpCircle,
-  AudioLines,
-  Command,
-  GalleryVerticalEnd,
-} from 'lucide-react'
+import { LayoutDashboard, AudioLines, Command } from 'lucide-react'
 import { type SidebarData } from '../types'
 
 export const sidebarData: SidebarData = {
   user: {
-    name: 'Transcriptor',
-    email: 'transcriptor@local',
+    name: 'Coding Power',
+    email: 'coding-power@local',
     avatar: '/avatars/shadcn.jpg',
   },
   teams: [
     {
-      name: 'Transcriptor',
+      name: 'Coding Power',
       logo: Command,
       plan: 'Audio · Whisper',
-    },
-    {
-      name: 'Acme Inc',
-      logo: GalleryVerticalEnd,
-      plan: 'Enterprise',
-    },
-    {
-      name: 'Acme Corp.',
-      logo: AudioLines,
-      plan: 'Startup',
     },
   ],
   navGroups: [
     {
-      title: 'General',
+      title: 'Principal',
       items: [
         {
-          title: 'Dashboard',
+          title: 'Panel',
           url: '/',
           icon: LayoutDashboard,
         },
         {
-          title: 'Transcriptions',
+          title: 'Transcripciones',
           url: '/transcriptions',
           icon: AudioLines,
-        },
-        {
-          title: 'Help Center',
-          url: '/help-center',
-          icon: HelpCircle,
         },
       ],
     },

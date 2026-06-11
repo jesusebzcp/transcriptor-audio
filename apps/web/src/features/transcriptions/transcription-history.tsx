@@ -10,19 +10,19 @@ export function TranscriptionHistory() {
   if (isLoading) {
     return (
       <div className='flex items-center gap-2 p-4 text-sm text-muted-foreground'>
-        <Loader2 className='h-4 w-4 animate-spin' /> Loading history...
+        <Loader2 className='h-4 w-4 animate-spin' /> Cargando historial...
       </div>
     )
   }
   if (error) {
     return (
-      <p className='p-4 text-sm text-destructive'>Failed to load history.</p>
+      <p className='p-4 text-sm text-destructive'>No se pudo cargar el historial.</p>
     )
   }
   if (!data || data.length === 0) {
     return (
       <p className='p-4 text-sm text-muted-foreground'>
-        No transcriptions yet.
+        Aun no hay transcripciones.
       </p>
     )
   }
@@ -44,7 +44,7 @@ export function TranscriptionHistory() {
                 size='icon'
                 variant='ghost'
                 onClick={() => del.mutate(t.id)}
-                aria-label='Delete'
+                aria-label='Eliminar'
               >
                 <Trash2 />
               </Button>

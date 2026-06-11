@@ -18,7 +18,7 @@ async def login(
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid email or password",
+            detail="Correo o contrasena incorrectos",
         )
     token, expires_in = create_access_token(user.email)
     return LoginResponse(

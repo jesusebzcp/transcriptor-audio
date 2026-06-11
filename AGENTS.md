@@ -1,6 +1,7 @@
 # AGENTS.md
 
 ## Monorepo Layout
+- Product name in UI/API docs: `Coding Power`.
 - `apps/api` - FastAPI backend (Python 3.11), SQLAlchemy 2 async, Alembic, faster-whisper.
 - `apps/web` - Vite + React 19 + TanStack Router admin template (derived from `satnaing/shadcn-admin`).
 - `docker-compose.yml` - Postgres + API + Web.
@@ -9,6 +10,7 @@
 - No Firebase, no Clerk, no external auth.
 - Backend: login posts OAuth2 password form to `/api/v1/auth/login`. Email must be in `AUTH_EMAILS` (comma-separated, case-insensitive) and password must verify against the argon2 hash in `AUTH_PASSWORD_HASH_VALUE`.
 - Generate a hash with: `python -c "from passlib.hash import argon2; print(argon2.hash('your-password'))"`.
+- In root `.env` used by Docker Compose, escape each `$` in argon2 hashes as `$$`; otherwise Compose interpolates pieces of the hash as variables and auth fails.
 - JWT signed with `JWT_SECRET` (HS256), default 60 min expiry. Token is sent as `Authorization: Bearer <token>`.
 - Frontend stores the token in a cookie via `useAuthStore` and attaches it to every request through `apps/web/src/lib/api.ts`. `AuthenticatedLayout` redirects to `/sign-in` if the cookie is missing.
 
@@ -17,6 +19,7 @@
 - The model is loaded lazily and cached in `apps/api/app/services/whisper.py`. Re-instantiation is triggered only if `WHISPER_MODEL` / `WHISPER_DEVICE` / `WHISPER_COMPUTE_TYPE` change.
 - Transcribe call uses `model.transcribe(...)` and the returned `segments` iterator MUST be consumed (e.g. `list(segments_iter)`); otherwise no transcription runs.
 - Defaults: `WHISPER_MODEL=small`, `WHISPER_DEVICE=cpu`, `WHISPER_COMPUTE_TYPE=int8`, `WHISPER_BEAM_SIZE=5`, `WHISPER_VAD_FILTER=true`.
+- `POST /api/v1/transcriptions` supports per-request `model_name`, `language`, `beam_size`, and `vad_filter`; backend passes these into faster-whisper, not just metadata.
 
 ## Database
 - Postgres 16. Tables: `users` (auto-created on first login by email) and `transcriptions` (FK to users, cascade delete).
@@ -42,7 +45,7 @@
 ## API Contract
 - `POST /api/v1/auth/login` - OAuth2 form (`username`=email, `password`). Returns `{ access_token, token_type, expires_in, user }`.
 - `GET /api/v1/auth/me` - Bearer token required.
-- `POST /api/v1/transcriptions` - multipart: `file` (mp3/wav/m4a/mp4), `context?`, `model_name?`. Returns the saved row.
+- `POST /api/v1/transcriptions` - multipart: `file` (mp3/wav/m4a/mp4), `context?`, `model_name?` (`tiny|base|small|medium|large-v3`), `language?` (`auto|es|en`, default `es`), `beam_size?` (`1..10`, default `5`), `vad_filter?` (default `true`). Returns the saved row.
 - `GET /api/v1/transcriptions` - list rows for the current user, newest first.
 - `DELETE /api/v1/transcriptions/{id}` - owner-only.
 

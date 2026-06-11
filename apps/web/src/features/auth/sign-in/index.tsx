@@ -13,9 +13,9 @@ export function SignIn() {
     <AuthLayout>
       <Card className='max-w-sm gap-4'>
         <CardHeader>
-          <CardTitle className='text-lg tracking-tight'>Sign in</CardTitle>
+          <CardTitle className='text-lg tracking-tight'>Iniciar sesion</CardTitle>
           <CardDescription>
-            Enter the credentials configured in your server environment.
+            Ingresa las credenciales configuradas en el entorno del servidor.
           </CardDescription>
         </CardHeader>
         <CardContent>

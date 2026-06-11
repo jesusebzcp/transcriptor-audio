@@ -25,7 +25,7 @@ export function AppTitle() {
               onClick={() => setOpenMobile(false)}
               className='grid flex-1 text-start text-sm leading-tight'
             >
-              <span className='truncate font-bold'>Transcriptor</span>
+              <span className='truncate font-bold'>Coding Power</span>
               <span className='truncate text-xs'>Audio · Whisper</span>
             </Link>
             <ToggleSidebar />
@@ -58,7 +58,7 @@ function ToggleSidebar({
     >
       <X className='md:hidden' />
       <Menu className='max-md:hidden' />
-      <span className='sr-only'>Toggle Sidebar</span>
+      <span className='sr-only'>Alternar barra lateral</span>
     </Button>
   )
 }

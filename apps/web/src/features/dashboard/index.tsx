@@ -18,19 +18,19 @@ export function Dashboard() {
       </Header>
       <Main>
         <div className='mb-4 flex items-center justify-between'>
-          <h1 className='text-2xl font-bold tracking-tight'>Dashboard</h1>
+          <h1 className='text-2xl font-bold tracking-tight'>Panel</h1>
         </div>
         <div className='grid gap-4 sm:grid-cols-2'>
           <Card>
             <CardHeader>
-              <CardTitle>Transcriptions</CardTitle>
+              <CardTitle>Transcripciones</CardTitle>
               <CardDescription>
-                Upload audio or video, run faster-whisper, save the result.
+                Sube audio o video, ejecuta faster-whisper y guarda el resultado.
               </CardDescription>
             </CardHeader>
             <CardContent>
               <Button asChild>
-                <Link to='/transcriptions'>Open transcriptions</Link>
+                <Link to='/transcriptions'>Abrir transcripciones</Link>
               </Button>
             </CardContent>
           </Card>

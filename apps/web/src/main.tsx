@@ -35,7 +35,7 @@ const queryClient = new QueryClient({
     onError: (error) => {
       if (error instanceof AxiosError) {
         if (error.response?.status === 401) {
-          toast.error('Session expired!')
+          toast.error('Sesion expirada')
           useAuthStore.getState().auth.reset()
           router.navigate({ to: '/sign-in' })
         }

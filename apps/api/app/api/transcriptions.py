@@ -8,6 +8,8 @@ from app.services.transcription import transcribe_file
 router = APIRouter(prefix="/transcriptions", tags=["transcriptions"])
 
 ALLOWED_EXT = {"mp3", "wav", "m4a", "mp4"}
+ALLOWED_MODELS = {"tiny", "base", "small", "medium", "large-v3"}
+ALLOWED_LANGUAGES = {"auto", "es", "en"}
 
 
 @router.post("", response_model=TranscriptionOut, status_code=status.HTTP_201_CREATED)
@@ -17,29 +19,57 @@ async def create_transcription(
     file: UploadFile = File(...),
     context: str | None = Form(default=None),
     model_name: str | None = Form(default=None),
+    language: str = Form(default="es"),
+    beam_size: int = Form(default=5),
+    vad_filter: bool = Form(default=True),
 ) -> TranscriptionOut:
     filename = file.filename or "upload"
     ext = filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
     if ext not in ALLOWED_EXT:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Unsupported file type: .{ext}",
+            detail=f"Tipo de archivo no soportado: .{ext}",
         )
 
     content = await file.read()
     if not content:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Empty file"
+            status_code=status.HTTP_400_BAD_REQUEST, detail="El archivo esta vacio"
         )
 
-    result = transcribe_file(content, suffix=f".{ext}", initial_prompt=context)
+    selected_model = model_name or "small"
+    if selected_model not in ALLOWED_MODELS:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Modelo no soportado: {selected_model}",
+        )
+    if language not in ALLOWED_LANGUAGES:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Idioma no soportado: {language}",
+        )
+    if beam_size < 1 or beam_size > 10:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="beam_size debe estar entre 1 y 10",
+        )
+
+    result = transcribe_file(
+        content,
+        suffix=f".{ext}",
+        initial_prompt=context,
+        language=None if language == "auto" else language,
+        model_name=selected_model,
+        beam_size=beam_size,
+        vad_filter=vad_filter,
+    )
 
     record = Transcription(
         user_id=user.id,
         file_name=filename,
         language=result.language,
         duration=result.duration,
-        model_name=model_name or "default",
+        model_name=selected_model,
         context=context,
         text=result.text,
     )
@@ -77,6 +107,6 @@ async def delete_transcription(
     )
     record = result.scalar_one_or_none()
     if record is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No encontrado")
     await session.delete(record)
     await session.commit()
