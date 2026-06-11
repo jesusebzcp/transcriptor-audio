@@ -1,9 +1,13 @@
-from fastapi import APIRouter, File, Form, HTTPException, UploadFile, status
+from pathlib import Path
+from uuid import uuid4
+
+from fastapi import APIRouter, File, Form, HTTPException, Response, UploadFile, status
+from fastapi.responses import PlainTextResponse
 
 from app.api.deps import CurrentUser, SessionDep
+from app.core.config import get_settings
 from app.models.models import Transcription
 from app.schemas.schemas import TranscriptionOut
-from app.services.transcription import transcribe_file
 
 router = APIRouter(prefix="/transcriptions", tags=["transcriptions"])
 
@@ -54,24 +58,24 @@ async def create_transcription(
             detail="beam_size debe estar entre 1 y 10",
         )
 
-    result = transcribe_file(
-        content,
-        suffix=f".{ext}",
-        initial_prompt=context,
-        language=None if language == "auto" else language,
-        model_name=selected_model,
-        beam_size=beam_size,
-        vad_filter=vad_filter,
-    )
+    settings = get_settings()
+    upload_dir = Path(settings.upload_dir)
+    upload_dir.mkdir(parents=True, exist_ok=True)
+    source_path = upload_dir / f"{uuid4().hex}.{ext}"
+    source_path.write_bytes(content)
 
     record = Transcription(
         user_id=user.id,
         file_name=filename,
-        language=result.language,
-        duration=result.duration,
+        language=None if language == "auto" else language,
+        duration=None,
         model_name=selected_model,
+        beam_size=beam_size,
+        vad_filter=vad_filter,
+        status="queued",
+        source_path=str(source_path),
         context=context,
-        text=result.text,
+        text="",
     )
     session.add(record)
     await session.commit()
@@ -108,5 +112,38 @@ async def delete_transcription(
     record = result.scalar_one_or_none()
     if record is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No encontrado")
+    if record.source_path:
+        try:
+            Path(record.source_path).unlink(missing_ok=True)
+        except OSError:
+            pass
     await session.delete(record)
     await session.commit()
+
+
+@router.get("/{transcription_id}/download")
+async def download_transcription(
+    transcription_id: int, user: CurrentUser, session: SessionDep
+) -> Response:
+    from sqlalchemy import select
+
+    result = await session.execute(
+        select(Transcription).where(
+            Transcription.id == transcription_id,
+            Transcription.user_id == user.id,
+        )
+    )
+    record = result.scalar_one_or_none()
+    if record is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No encontrado")
+    if record.status != "completed":
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="La transcripcion aun no esta lista",
+        )
+    filename = Path(record.file_name).stem or "transcripcion"
+    return PlainTextResponse(
+        record.text,
+        media_type="text/plain; charset=utf-8",
+        headers={"Content-Disposition": f'attachment; filename="{filename}.txt"'},
+    )

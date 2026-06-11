@@ -5,6 +5,7 @@
 - `apps/api` - FastAPI backend (Python 3.11), SQLAlchemy 2 async, Alembic, faster-whisper.
 - `apps/web` - Vite + React 19 + TanStack Router admin template (derived from `satnaing/shadcn-admin`).
 - `docker-compose.yml` - Postgres + API + Web.
+- `docker-compose.dev.yml` / `docker-compose.prod.yml` also run `worker`, which processes queued transcription jobs.
 
 ## Auth (env-only)
 - No Firebase, no Clerk, no external auth.
@@ -23,11 +24,13 @@
 
 ## Database
 - Postgres 16. Tables: `users` (auth, active/admin flags) and `transcriptions` (FK to users, cascade delete). Each user only lists/deletes their own transcriptions.
+- `transcriptions.status` drives the queue: `queued`, `processing`, `completed`, `failed`. Worker claims jobs with `FOR UPDATE SKIP LOCKED`.
 - Async driver is `asyncpg`. Alembic is wired in `apps/api/alembic/env.py` and reads `DATABASE_URL`. The first revision is `apps/api/alembic/versions/0001_initial.py`.
 - `lifespan` in `app/main.py` also runs `Base.metadata.create_all` for quick local bring-up; use Alembic for any real change.
 
 ## Commands
 - API dev: `cd apps/api && uvicorn app.main:app --reload --host 0.0.0.0 --port 8000`
+- Worker dev: `cd apps/api && python -m app.worker`
 - API deps: `pip install -r apps/api/requirements.txt`
 - Alembic migration (after schema changes): `cd apps/api && alembic revision --autogenerate -m "msg"` then `alembic upgrade head`.
 - Web dev: `cd apps/web && pnpm install && pnpm dev`
@@ -51,13 +54,15 @@
 - `POST /api/v1/users` - admin-only create invited user with `{ email, password, is_active, is_admin }`.
 - `PATCH /api/v1/users/{id}` - admin-only update email/password/active/admin.
 - `DELETE /api/v1/users/{id}` - admin-only delete user; cascades their transcriptions. Self-delete is blocked.
-- `POST /api/v1/transcriptions` - multipart: `file` (mp3/wav/m4a/mp4), `context?`, `model_name?` (`tiny|base|small|medium|large-v3`), `language?` (`auto|es|en`, default `es`), `beam_size?` (`1..10`, default `5`), `vad_filter?` (default `true`). Returns the saved row.
+- `POST /api/v1/transcriptions` - multipart: `file` (mp3/wav/m4a/mp4), `context?`, `model_name?` (`tiny|base|small|medium|large-v3`), `language?` (`auto|es|en`, default `es`), `beam_size?` (`1..10`, default `5`), `vad_filter?` (default `true`). Enqueues a job and returns the saved row with `status=queued`.
 - `GET /api/v1/transcriptions` - list rows for the current user, newest first.
+- `GET /api/v1/transcriptions/{id}/download` - owner-only `.txt` download; only works when `status=completed`.
 - `DELETE /api/v1/transcriptions/{id}` - owner-only.
 
 ## Operational Gotchas
 - `WHISPER_MODEL=large-v3` on CPU is slow; start with `small` or `base` for development.
 - Postgres must be reachable before the API starts; compose healthcheck gates the API container.
 - Whisper model files cache under `~/.cache/huggingface`; in compose it is mounted on the `whisper_cache` volume to avoid re-downloading.
+- Uploaded media is stored under `UPLOAD_DIR` and shared between API/worker through `uploads_data`; do not put it in the repo.
 - CORS allows `http://localhost:5173` and `http://localhost` (nginx-served web). Add new origins in `apps/api/app/main.py` if deploying elsewhere.
 - `JWT_SECRET` defaults to `change-me` for local dev only; rotate before any non-local deploy.

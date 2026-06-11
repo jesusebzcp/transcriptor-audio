@@ -3,7 +3,7 @@ import { cn } from '@/lib/utils'
 
 type SignalChipProps = React.HTMLAttributes<HTMLSpanElement> & {
   pulse?: boolean
-  variant?: 'signal' | 'muted' | 'cream'
+  variant?: 'signal' | 'muted' | 'cream' | 'destructive'
 }
 
 export function SignalChip({
@@ -20,6 +20,8 @@ export function SignalChip({
       'border-border bg-muted text-muted-foreground',
     cream:
       'border-ink/15 bg-ink/[0.04] text-ink dark:border-cream/15 dark:bg-cream/[0.04] dark:text-cream',
+    destructive:
+      'border-destructive/30 bg-destructive/10 text-destructive',
   } as const
 
   return (
@@ -34,7 +36,11 @@ export function SignalChip({
       <span
         className={cn(
           'inline-block size-1.5 rounded-full',
-          variant === 'signal' ? 'bg-signal' : 'bg-muted-foreground',
+          variant === 'signal'
+            ? 'bg-signal'
+            : variant === 'destructive'
+              ? 'bg-destructive'
+              : 'bg-muted-foreground',
           pulse && 'signal-dot'
         )}
       />

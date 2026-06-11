@@ -15,8 +15,8 @@ export function Dashboard() {
   return (
     <>
       <Header />
-      <Main className='space-y-10'>
-        <section className='relative overflow-hidden rounded-xl border border-border/60 bg-gradient-to-br from-card/60 via-card/30 to-transparent p-6 md:p-10'>
+      <Main className='space-y-8 md:space-y-10'>
+        <section className='relative overflow-hidden rounded-xl border border-border/60 bg-gradient-to-br from-card/60 via-card/30 to-transparent p-5 sm:p-7 md:p-10'>
           <div
             aria-hidden='true'
             className='pointer-events-none absolute inset-0 opacity-[0.5]'
@@ -36,11 +36,11 @@ export function Dashboard() {
                 'radial-gradient(70% 60% at 50% 50%, black 30%, transparent 75%)',
             }}
           />
-          <div className='relative flex flex-col gap-8 md:flex-row md:items-end md:justify-between'>
+          <div className='relative flex flex-col gap-6 md:gap-8 md:flex-row md:items-end md:justify-between'>
             <div className='space-y-4'>
               <SectionEyebrow>overview · runtime 0.4.1</SectionEyebrow>
               <h1
-                className='text-balance text-[2.5rem] leading-[1.04] tracking-[-0.02em] md:text-[3rem]'
+                className='text-balance text-[2.25rem] leading-[1.04] tracking-[-0.02em] md:text-[3rem]'
                 style={{ fontFamily: 'var(--font-serif)' }}
               >
                 Welcome back, <em className='italic text-signal'>operator</em>.
@@ -53,7 +53,7 @@ export function Dashboard() {
               <div className='flex flex-wrap items-center gap-2'>
                 <Button
                   asChild
-                  className='group h-11 rounded-md bg-foreground px-5 text-background hover:bg-foreground/90'
+                  className='group h-11 rounded-md bg-foreground px-4 text-background hover:bg-foreground/90 sm:px-5'
                 >
                   <Link to='/transcriptions'>
                     <span className='font-mono text-[11px] uppercase tracking-[0.24em]'>
@@ -65,20 +65,21 @@ export function Dashboard() {
                 <Button
                   asChild
                   variant='outline'
-                  className='h-11 rounded-md border-border/60 bg-background/40 font-mono text-[11px] uppercase tracking-[0.24em] hover:border-signal/50 hover:bg-background/60'
+                  className='h-11 rounded-md border-border/60 bg-background/40 px-4 font-mono text-[11px] uppercase tracking-[0.24em] hover:border-signal/50 hover:bg-background/60 sm:px-5'
                 >
                   <Link to='/users'>gestionar usuarios</Link>
                 </Button>
               </div>
             </div>
-            <div className='hidden shrink-0 md:block md:w-72 lg:w-80'>
+            <div className='shrink-0 md:w-72 lg:w-80'>
               <div className='rounded-lg border border-border/60 bg-background/40 p-4'>
                 <div className='mb-3 flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground'>
-                  <span>live · 48khz</span>
+                  <span className='hidden sm:inline'>live · 48khz</span>
+                  <span className='sm:hidden'>live</span>
                   <SignalChip pulse>live</SignalChip>
                 </div>
-                <div className='h-16'>
-                  <AudioWaveform />
+                <div className='h-12 sm:h-16'>
+                  <AudioWaveform bars={32} />
                 </div>
               </div>
             </div>
@@ -123,7 +124,7 @@ export function Dashboard() {
             title='Ir a'
             highlight='trabajar'
           />
-          <div className='grid gap-3 md:grid-cols-3'>
+          <div className='grid gap-3 sm:grid-cols-2 md:grid-cols-3'>
             <QuickAction
               to='/transcriptions'
               icon={AudioLines}

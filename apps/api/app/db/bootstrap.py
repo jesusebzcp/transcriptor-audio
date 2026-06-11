@@ -16,7 +16,38 @@ async def ensure_runtime_schema(conn: AsyncConnection) -> None:
     )
     await conn.execute(text("UPDATE users SET is_active = TRUE WHERE is_active IS NULL"))
     await conn.execute(text("UPDATE users SET is_admin = FALSE WHERE is_admin IS NULL"))
+    await ensure_transcription_queue_schema(conn)
     await bootstrap_env_admins(conn)
+
+
+async def ensure_transcription_queue_schema(conn: AsyncConnection) -> None:
+    await conn.execute(
+        text("ALTER TABLE transcriptions ADD COLUMN IF NOT EXISTS beam_size INTEGER DEFAULT 5")
+    )
+    await conn.execute(
+        text("ALTER TABLE transcriptions ADD COLUMN IF NOT EXISTS vad_filter BOOLEAN DEFAULT TRUE")
+    )
+    await conn.execute(
+        text("ALTER TABLE transcriptions ADD COLUMN IF NOT EXISTS status VARCHAR(32) DEFAULT 'completed'")
+    )
+    await conn.execute(
+        text("ALTER TABLE transcriptions ADD COLUMN IF NOT EXISTS source_path VARCHAR(1024)")
+    )
+    await conn.execute(
+        text("ALTER TABLE transcriptions ADD COLUMN IF NOT EXISTS error_message TEXT")
+    )
+    await conn.execute(
+        text("ALTER TABLE transcriptions ADD COLUMN IF NOT EXISTS started_at TIMESTAMP WITH TIME ZONE")
+    )
+    await conn.execute(
+        text("ALTER TABLE transcriptions ADD COLUMN IF NOT EXISTS completed_at TIMESTAMP WITH TIME ZONE")
+    )
+    await conn.execute(text("UPDATE transcriptions SET beam_size = 5 WHERE beam_size IS NULL"))
+    await conn.execute(text("UPDATE transcriptions SET vad_filter = TRUE WHERE vad_filter IS NULL"))
+    await conn.execute(text("UPDATE transcriptions SET status = 'completed' WHERE status IS NULL"))
+    await conn.execute(
+        text("CREATE INDEX IF NOT EXISTS ix_transcriptions_status ON transcriptions (status)")
+    )
 
 
 async def bootstrap_env_admins(conn: AsyncConnection) -> None:

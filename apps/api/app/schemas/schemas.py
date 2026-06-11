@@ -55,9 +55,15 @@ class TranscriptionOut(BaseModel):
     language: str | None
     duration: float | None
     model_name: str
+    beam_size: int
+    vad_filter: bool
+    status: str
+    error_message: str | None
     context: str | None
     text: str
     created_at: datetime
+    started_at: datetime | None
+    completed_at: datetime | None
 
 
 LoginResponse.model_rebuild()

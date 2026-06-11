@@ -53,7 +53,7 @@ export function TranscriptionForm() {
     form.append('vad_filter', String(vadFilter))
     mutation.mutate(form, {
       onSuccess: () => {
-        toast.success('Transcripcion completada')
+        toast.success('Transcripcion enviada a cola')
         setFile(null)
       },
       onError: (err) => {
@@ -73,7 +73,7 @@ export function TranscriptionForm() {
         aria-hidden='true'
         className='pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-signal/40 to-transparent'
       />
-      <div className='space-y-6 p-6 md:p-8'>
+      <div className='space-y-6 p-5 sm:p-6 md:p-8'>
         <header className='flex flex-wrap items-end justify-between gap-3 border-b border-border/60 pb-5'>
           <div className='space-y-2'>
             <SectionEyebrow>01 · nueva corrida</SectionEyebrow>
@@ -169,12 +169,12 @@ export function TranscriptionForm() {
                 <button
                   type='button'
                   onClick={() => setBeamSize((v) => Math.max(1, v - 1))}
-                  className='inline-flex h-9 w-9 items-center justify-center rounded-sm border border-border/60 text-muted-foreground transition-colors hover:border-signal/40 hover:bg-signal/10 hover:text-signal'
+                  className='inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-sm border border-border/60 text-muted-foreground transition-colors hover:border-signal/40 hover:bg-signal/10 hover:text-signal'
                   aria-label='Reducir beam'
                 >
                   −
                 </button>
-                <div className='relative flex-1 overflow-hidden'>
+                <div className='relative hidden flex-1 overflow-hidden md:block'>
                   <div
                     aria-hidden='true'
                     className='absolute inset-y-1/2 left-0 h-px -translate-y-1/2 bg-gradient-to-r from-signal/60 via-signal/30 to-transparent transition-all duration-500'
@@ -195,10 +195,13 @@ export function TranscriptionForm() {
                     ))}
                   </div>
                 </div>
+                <span className='font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground md:hidden'>
+                  beam
+                </span>
                 <button
                   type='button'
                   onClick={() => setBeamSize((v) => Math.min(10, v + 1))}
-                  className='inline-flex h-9 w-9 items-center justify-center rounded-sm border border-border/60 text-muted-foreground transition-colors hover:border-signal/40 hover:bg-signal/10 hover:text-signal'
+                  className='inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-sm border border-border/60 text-muted-foreground transition-colors hover:border-signal/40 hover:bg-signal/10 hover:text-signal'
                   aria-label='Aumentar beam'
                 >
                   +
@@ -209,7 +212,7 @@ export function TranscriptionForm() {
                   max={10}
                   value={beamSize}
                   onChange={(e) => setBeamSize(Number(e.target.value))}
-                  className='h-9 w-14 border-border/60 bg-background/60 text-center font-mono text-xs focus-visible:border-signal focus-visible:ring-0 focus-visible:ring-offset-0'
+                  className='h-9 w-14 shrink-0 border-border/60 bg-background/60 text-center font-mono text-xs focus-visible:border-signal focus-visible:ring-0 focus-visible:ring-offset-0'
                 />
               </div>
             </div>
@@ -237,7 +240,7 @@ export function TranscriptionForm() {
         </div>
       </div>
 
-      <footer className='flex flex-col gap-4 border-t border-border/60 bg-background/30 p-6 md:flex-row md:items-center md:justify-between md:p-8'>
+      <footer className='flex flex-col gap-4 border-t border-border/60 bg-background/30 p-5 sm:p-6 md:flex-row md:items-center md:justify-between md:p-8'>
         <div className='flex flex-wrap items-center gap-3 font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground'>
           <span className='flex items-center gap-1.5'>
             <ShieldCheck className='size-3 text-signal' />

@@ -13,15 +13,15 @@ export function TranscriptionsPage() {
           eyebrow='01 · workspace'
           title='Transcripciones'
           highlight='whisper'
-          description='Carga un archivo, configura el modelo y guarda el resultado. Todo se procesa en el backend con faster-whisper.'
+          description='Carga un archivo, configura el modelo y el worker lo procesara en segundo plano aunque cierres la pagina.'
         />
         <TranscriptionForm />
         <section className='space-y-4'>
           <PageHeader
-            eyebrow='02 · archivo'
-            title='Historial de'
-            highlight='corridas'
-            description='Tus transcripciones mas recientes, guardadas y disponibles para descarga.'
+            eyebrow='02 · procesos'
+            title='Cola de'
+            highlight='trabajo'
+            description='Revisa el estado de tus procesos y descarga el resultado cuando esten listos.'
           />
           <TranscriptionHistory />
         </section>

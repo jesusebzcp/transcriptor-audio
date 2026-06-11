@@ -27,17 +27,17 @@ export function PageHeader({
       )}
       {...props}
     >
-      <div className='space-y-3'>
+      <div className='min-w-0 flex-1 space-y-3'>
         <SectionEyebrow>{eyebrow}</SectionEyebrow>
         <h1
-          className='text-[2.25rem] leading-[1.05] tracking-[-0.02em] text-foreground md:text-[2.5rem]'
+          className='text-balance text-[1.875rem] leading-[1.05] tracking-[-0.02em] text-foreground sm:text-[2.25rem] md:text-[2.5rem]'
           style={{ fontFamily: 'var(--font-serif)' }}
         >
           {title}
           {highlight && (
             <>
-            {' '}
-            <em className='italic text-signal'>{highlight}</em>
+              {' '}
+              <em className='italic text-signal'>{highlight}</em>
             </>
           )}
         </h1>
@@ -47,7 +47,11 @@ export function PageHeader({
           </p>
         )}
       </div>
-      {actions && <div className='flex flex-wrap items-center gap-2'>{actions}</div>}
+      {actions && (
+        <div className='flex w-full flex-wrap items-center gap-2 md:w-auto md:flex-nowrap md:justify-end'>
+          {actions}
+        </div>
+      )}
     </header>
   )
 }
