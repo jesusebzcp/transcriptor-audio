@@ -8,7 +8,7 @@
 
 ## Auth (env-only)
 - No Firebase, no Clerk, no external auth.
-- Backend: login posts OAuth2 password form to `/api/v1/auth/login`. Email must be in `AUTH_EMAILS` (comma-separated, case-insensitive) and password must verify against the argon2 hash in `AUTH_PASSWORD_HASH_VALUE`.
+- Backend: login posts OAuth2 password form to `/api/v1/auth/login`. First admin users are bootstrapped from `AUTH_EMAILS` + `AUTH_PASSWORD_HASH_VALUE`; invited users live in Postgres with their own argon2 `password_hash`.
 - Generate a hash with: `python -c "from passlib.hash import argon2; print(argon2.hash('your-password'))"`.
 - In root `.env` used by Docker Compose, escape each `$` in argon2 hashes as `$$`; otherwise Compose interpolates pieces of the hash as variables and auth fails.
 - JWT signed with `JWT_SECRET` (HS256), default 60 min expiry. Token is sent as `Authorization: Bearer <token>`.
@@ -22,7 +22,7 @@
 - `POST /api/v1/transcriptions` supports per-request `model_name`, `language`, `beam_size`, and `vad_filter`; backend passes these into faster-whisper, not just metadata.
 
 ## Database
-- Postgres 16. Tables: `users` (auto-created on first login by email) and `transcriptions` (FK to users, cascade delete).
+- Postgres 16. Tables: `users` (auth, active/admin flags) and `transcriptions` (FK to users, cascade delete). Each user only lists/deletes their own transcriptions.
 - Async driver is `asyncpg`. Alembic is wired in `apps/api/alembic/env.py` and reads `DATABASE_URL`. The first revision is `apps/api/alembic/versions/0001_initial.py`.
 - `lifespan` in `app/main.py` also runs `Base.metadata.create_all` for quick local bring-up; use Alembic for any real change.
 
@@ -34,17 +34,23 @@
 - Web build: `cd apps/web && pnpm build` (runs `tsc -b && vite build`).
 - Web lint: `cd apps/web && pnpm lint`.
 - Full stack (prod): `docker compose up --build` (requires `.env` at repo root; copy from `.env.example`).
+- Full stack (prod deploy): `cp .env.prod.example .env.prod`, fill secrets, then `docker compose --env-file .env.prod -f docker-compose.prod.yml up -d --build`. Prod exposes only web on `WEB_PORT`; nginx proxies `/api` to FastAPI.
 - Full stack (dev, live reload): `docker compose -f docker-compose.dev.yml up --build`. API source mounted from `apps/api/app`, web source from `apps/web`. Web runs Vite via `pnpm dev` on port 5173.
 
 ## Frontend Notes
-- TanStack Router is file-based. Routes live under `apps/web/src/routes`. After adding/removing route files, regenerate the tree with the TanStack Router plugin (or hand-edit `apps/web/src/routeTree.gen.ts` to match the current set: `/`, `/sign-in`, `/transcriptions`).
+- TanStack Router is file-based. Routes live under `apps/web/src/routes`. After adding/removing route files, regenerate the tree with the TanStack Router plugin (or hand-edit `apps/web/src/routeTree.gen.ts` to match the current set: `/`, `/sign-in`, `/transcriptions`, `/users`).
 - `VITE_API_URL` must be set at build time. In Docker it is injected via `docker-compose.yml`; locally create `apps/web/.env` with `VITE_API_URL=http://localhost:8000`.
+- In prod compose, `VITE_API_URL=` empty means same-origin calls; `apps/web/nginx.conf` proxies `/api/` to `api:8000`.
 - `pnpm` is required (template uses `pnpm-lock.yaml`).
-- The Clerk, demo dashboards, settings, tasks, users, chats, errors, help-center, apps pages were removed; if you need to add a page, prefer keeping the existing sidebar / layout components.
+- The Clerk, demo dashboards, settings, tasks, chats, errors, help-center, apps pages were removed; if you need to add a page, prefer keeping the existing sidebar / layout components.
 
 ## API Contract
 - `POST /api/v1/auth/login` - OAuth2 form (`username`=email, `password`). Returns `{ access_token, token_type, expires_in, user }`.
 - `GET /api/v1/auth/me` - Bearer token required.
+- `GET /api/v1/users` - admin-only list users.
+- `POST /api/v1/users` - admin-only create invited user with `{ email, password, is_active, is_admin }`.
+- `PATCH /api/v1/users/{id}` - admin-only update email/password/active/admin.
+- `DELETE /api/v1/users/{id}` - admin-only delete user; cascades their transcriptions. Self-delete is blocked.
 - `POST /api/v1/transcriptions` - multipart: `file` (mp3/wav/m4a/mp4), `context?`, `model_name?` (`tiny|base|small|medium|large-v3`), `language?` (`auto|es|en`, default `es`), `beam_size?` (`1..10`, default `5`), `vad_filter?` (default `true`). Returns the saved row.
 - `GET /api/v1/transcriptions` - list rows for the current user, newest first.
 - `DELETE /api/v1/transcriptions/{id}` - owner-only.

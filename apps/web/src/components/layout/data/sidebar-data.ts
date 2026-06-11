@@ -1,4 +1,4 @@
-import { LayoutDashboard, AudioLines, Command } from 'lucide-react'
+import { AudioLines, LayoutDashboard, Users } from 'lucide-react'
 import { type SidebarData } from '../types'
 
 export const sidebarData: SidebarData = {
@@ -10,13 +10,13 @@ export const sidebarData: SidebarData = {
   teams: [
     {
       name: 'Coding Power',
-      logo: Command,
+      logo: AudioLines,
       plan: 'Audio · Whisper',
     },
   ],
   navGroups: [
     {
-      title: 'Principal',
+      title: '01 · Consola',
       items: [
         {
           title: 'Panel',
@@ -27,6 +27,11 @@ export const sidebarData: SidebarData = {
           title: 'Transcripciones',
           url: '/transcriptions',
           icon: AudioLines,
+        },
+        {
+          title: 'Usuarios',
+          url: '/users',
+          icon: Users,
         },
       ],
     },

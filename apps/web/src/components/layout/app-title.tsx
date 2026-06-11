@@ -8,6 +8,7 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar'
 import { Button } from '../ui/button'
+import { BrandMark } from '@/features/auth/components/brand-mark'
 
 export function AppTitle() {
   const { setOpenMobile } = useSidebar()
@@ -23,10 +24,12 @@ export function AppTitle() {
             <Link
               to='/'
               onClick={() => setOpenMobile(false)}
-              className='grid flex-1 text-start text-sm leading-tight'
+              className='grid flex-1 text-start leading-tight'
             >
-              <span className='truncate font-bold'>Coding Power</span>
-              <span className='truncate text-xs'>Audio · Whisper</span>
+              <BrandMark />
+              <span className='mt-1 truncate font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground'>
+                audio · whisper
+              </span>
             </Link>
             <ToggleSidebar />
           </div>

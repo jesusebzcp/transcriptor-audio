@@ -15,6 +15,7 @@ import {
   SidebarMenuItem,
 } from '@/components/ui/sidebar'
 import { useAuthStore } from '@/stores/auth-store'
+import { getDisplayNameInitials } from '@/lib/utils'
 
 type NavUserProps = {
   user: {
@@ -39,35 +40,43 @@ export function NavUser({ user }: NavUserProps) {
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton
               size='lg'
-              className='data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground'
+              className='border border-border/60 bg-card/40 data-[state=open]:border-signal/50 data-[state=open]:bg-card/70'
             >
-              <Avatar className='h-8 w-8 rounded-lg'>
-                <AvatarFallback className='rounded-lg'>
-                  {user.email.slice(0, 2).toUpperCase()}
+              <Avatar className='h-8 w-8 rounded-md border border-signal/30 bg-signal/10'>
+                <AvatarFallback className='rounded-md bg-signal/15 font-mono text-[10px] tracking-wider text-signal'>
+                  {getDisplayNameInitials(user.email)}
                 </AvatarFallback>
               </Avatar>
-              <div className='grid flex-1 text-start text-sm leading-tight'>
-                <span className='truncate font-semibold'>{user.name}</span>
-                <span className='truncate text-xs'>{user.email}</span>
+              <div className='grid flex-1 text-start leading-tight'>
+                <span className='truncate font-mono text-[11px] uppercase tracking-[0.18em] text-foreground/90'>
+                  {user.email}
+                </span>
+                <span className='truncate font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground'>
+                  sesion activa
+                </span>
               </div>
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
-            className='min-w-56 rounded-lg'
+            className='min-w-56 rounded-lg border-border/60'
             side='right'
             align='end'
             sideOffset={4}
           >
             <DropdownMenuLabel className='p-0 font-normal'>
               <div className='flex items-center gap-2 px-1 py-1.5 text-start text-sm'>
-                <Avatar className='h-8 w-8 rounded-lg'>
-                  <AvatarFallback className='rounded-lg'>
-                    {user.email.slice(0, 2).toUpperCase()}
+                <Avatar className='h-8 w-8 rounded-md border border-signal/30 bg-signal/10'>
+                  <AvatarFallback className='rounded-md bg-signal/15 font-mono text-[10px] tracking-wider text-signal'>
+                    {getDisplayNameInitials(user.email)}
                   </AvatarFallback>
                 </Avatar>
-                <div className='grid flex-1 text-start text-sm leading-tight'>
-                  <span className='truncate font-semibold'>{user.name}</span>
-                  <span className='truncate text-xs'>{user.email}</span>
+                <div className='grid flex-1 text-start leading-tight'>
+                  <span className='truncate font-mono text-[11px] uppercase tracking-[0.18em]'>
+                    {user.email}
+                  </span>
+                  <span className='truncate text-[10px] uppercase tracking-[0.2em] text-muted-foreground'>
+                    sesion activa
+                  </span>
                 </div>
               </div>
             </DropdownMenuLabel>
@@ -75,6 +84,7 @@ export function NavUser({ user }: NavUserProps) {
             <DropdownMenuItem
               variant='destructive'
               onClick={handleSignOut}
+              className='font-mono text-[11px] uppercase tracking-[0.2em]'
             >
               <LogOut />
               Cerrar sesion

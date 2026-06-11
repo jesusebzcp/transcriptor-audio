@@ -1,0 +1,9 @@
+node_modules
+dist
+.tanstack
+.vite
+.env
+.env.local
+npm-debug.log*
+pnpm-debug.log*
+Dockerfile

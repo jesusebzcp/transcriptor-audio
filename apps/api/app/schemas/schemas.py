@@ -20,6 +20,22 @@ class UserOut(BaseModel):
 
     id: int
     email: EmailStr
+    is_active: bool
+    is_admin: bool
+
+
+class UserCreate(BaseModel):
+    email: EmailStr
+    password: str = Field(min_length=6)
+    is_active: bool = True
+    is_admin: bool = False
+
+
+class UserUpdate(BaseModel):
+    email: EmailStr | None = None
+    password: str | None = Field(default=None, min_length=6)
+    is_active: bool | None = None
+    is_admin: bool | None = None
 
 
 class TranscriptionCreate(BaseModel):
