@@ -42,6 +42,9 @@ async def ensure_transcription_queue_schema(conn: AsyncConnection) -> None:
     await conn.execute(
         text("ALTER TABLE transcriptions ADD COLUMN IF NOT EXISTS completed_at TIMESTAMP WITH TIME ZONE")
     )
+    await conn.execute(
+        text("ALTER TABLE transcriptions ADD COLUMN IF NOT EXISTS processing_time FLOAT")
+    )
     await conn.execute(text("UPDATE transcriptions SET beam_size = 5 WHERE beam_size IS NULL"))
     await conn.execute(text("UPDATE transcriptions SET vad_filter = TRUE WHERE vad_filter IS NULL"))
     await conn.execute(text("UPDATE transcriptions SET status = 'completed' WHERE status IS NULL"))

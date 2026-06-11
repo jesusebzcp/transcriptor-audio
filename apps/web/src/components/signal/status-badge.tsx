@@ -7,6 +7,7 @@ export type StatusVariant =
   | 'processing'
   | 'completed'
   | 'failed'
+  | 'cancelled'
 
 type StatusBadgeProps = React.HTMLAttributes<HTMLSpanElement> & {
   status: StatusVariant
@@ -18,6 +19,7 @@ const DEFAULT_LABEL: Record<StatusVariant, string> = {
   processing: 'Procesando',
   completed: 'Listo',
   failed: 'Error',
+  cancelled: 'Cancelado',
 }
 
 const PALETTE: Record<
@@ -47,6 +49,11 @@ const PALETTE: Record<
     wrap: 'border-destructive/40 bg-destructive/10 text-destructive',
     dot: 'bg-destructive',
     text: 'text-destructive',
+  },
+  cancelled: {
+    wrap: 'border-slate-400/30 bg-slate-400/10 text-slate-400',
+    dot: 'bg-slate-400',
+    text: 'text-slate-400',
   },
 }
 
@@ -95,6 +102,14 @@ function StatusIcon({ status }: { status: StatusVariant }) {
     return (
       <CheckCircle2
         className='tick-pop size-3.5 text-emerald-400'
+        aria-hidden='true'
+      />
+    )
+  }
+  if (status === 'cancelled') {
+    return (
+      <XCircle
+        className='size-3.5 text-slate-400'
         aria-hidden='true'
       />
     )

@@ -68,6 +68,8 @@ async def process_next_job() -> bool:
         job = await session.get(Transcription, job_id)
         if job is None:
             return True
+        if job.status == "cancelled":
+            return True
         try:
             if not job.source_path or not os.path.exists(job.source_path):
                 raise FileNotFoundError("No se encontro el archivo fuente")
@@ -79,6 +81,10 @@ async def process_next_job() -> bool:
                 beam_size=job.beam_size,
                 vad_filter=job.vad_filter,
             )
+            # Cooperative cancel: re-check status after transcription
+            await session.refresh(job)
+            if job.status == "cancelled":
+                return True
             job.text = result.text
             job.language = result.language
             job.duration = result.duration
@@ -88,6 +94,9 @@ async def process_next_job() -> bool:
                 job.processing_time = (job.completed_at - job.started_at).total_seconds()
             job.error_message = None
         except Exception as exc:  # noqa: BLE001 - persist worker failure for UI
+            await session.refresh(job)
+            if job.status == "cancelled":
+                return True
             job.status = "failed"
             job.error_message = str(exc)
             job.completed_at = datetime.now(timezone.utc)

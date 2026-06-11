@@ -13,3 +13,4 @@ python-dotenv==1.0.1
 faster-whisper==1.1.0
 requests==2.32.3
 tokenizers<1.0
+slowapi==0.1.9

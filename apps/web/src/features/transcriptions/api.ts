@@ -9,7 +9,7 @@ export interface Transcription {
   model_name: string
   beam_size: number
   vad_filter: boolean
-  status: 'queued' | 'processing' | 'completed' | 'failed'
+  status: 'queued' | 'processing' | 'completed' | 'failed' | 'cancelled'
   error_message: string | null
   context: string | null
   text: string
@@ -38,11 +38,18 @@ export function useTranscriptions() {
 export function useCreateTranscription() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: async (form: FormData) => {
-      const res = await api.post<Transcription>(
-        '/api/v1/transcriptions',
-        form,
-      )
+    mutationFn: async ({
+      form,
+      onUploadProgress,
+    }: {
+      form: FormData
+      onUploadProgress?: (pct: number) => void
+    }) => {
+      const res = await api.post<Transcription>('/api/v1/transcriptions', form, {
+        onUploadProgress: (e) => {
+          if (e.total) onUploadProgress?.(Math.round((e.loaded / e.total) * 100))
+        },
+      })
       return res.data
     },
     onSuccess: () => {
@@ -63,6 +70,19 @@ export async function downloadTranscription(id: number, fileName: string) {
   link.click()
   link.remove()
   window.URL.revokeObjectURL(url)
+}
+
+export function useCancelTranscription() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (id: number) => {
+      const res = await api.post<Transcription>(`/api/v1/transcriptions/${id}/cancel`)
+      return res.data
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['transcriptions'] })
+    },
+  })
 }
 
 export function useDeleteTranscription() {

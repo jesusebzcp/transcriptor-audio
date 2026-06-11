@@ -25,10 +25,17 @@ class Settings(BaseSettings):
     whisper_vad_filter: bool = Field(default=True, alias="WHISPER_VAD_FILTER")
 
     upload_dir: str = Field(default="/tmp/transcriptor-uploads", alias="UPLOAD_DIR")
+    cors_allowed_origins: str = Field(default="", alias="CORS_ALLOWED_ORIGINS")
 
     @property
     def allowed_emails(self) -> set[str]:
         return {e.strip().lower() for e in self.auth_emails.split(",") if e.strip()}
+
+    @property
+    def cors_origins(self) -> list[str]:
+        if not self.cors_allowed_origins:
+            return []
+        return [o.strip() for o in self.cors_allowed_origins.split(",") if o.strip()]
 
 
 @lru_cache

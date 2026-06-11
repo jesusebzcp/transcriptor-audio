@@ -1,12 +1,32 @@
-import { Download, FileAudio, Loader2, Trash2, Clock } from 'lucide-react'
+import { useState } from 'react'
+import {
+  Ban,
+  Download,
+  FileAudio,
+  Loader2,
+  Trash2,
+  Clock,
+} from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 import { SectionEyebrow, SignalChip } from '@/components/signal'
 import { ProcessProgress } from '@/components/signal/process-progress'
 import { StatusBadge } from '@/components/signal/status-badge'
 import { cn } from '@/lib/utils'
 import {
   downloadTranscription,
+  useCancelTranscription,
   useDeleteTranscription,
   useTranscriptions,
   type Transcription,
@@ -323,6 +343,9 @@ function Actions({
   onDelete: (id: number) => void
   className?: string
 }) {
+  const cancel = useCancelTranscription()
+  const [openCancel, setOpenCancel] = useState(false)
+
   async function handleDownload() {
     try {
       await downloadTranscription(item.id, item.file_name)
@@ -331,8 +354,58 @@ function Actions({
     }
   }
 
+  function handleCancel() {
+    cancel.mutate(item.id, {
+      onSuccess: () => {
+        toast.success('Transcripcion cancelada')
+        setOpenCancel(false)
+      },
+      onError: (err) => {
+        toast.error(
+          err instanceof Error ? err.message : 'No se pudo cancelar',
+        )
+        setOpenCancel(false)
+      },
+    })
+  }
+
+  const cancellable = ['queued', 'processing'].includes(item.status)
+
   return (
     <div className={cn('flex items-center gap-2', className)}>
+      {cancellable && (
+        <AlertDialog open={openCancel} onOpenChange={setOpenCancel}>
+          <AlertDialogTrigger asChild>
+            <Button
+              type='button'
+              variant='outline'
+              size='sm'
+              disabled={cancel.isPending}
+              className='font-mono text-[10px] uppercase tracking-[0.22em] border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive'
+            >
+              <Ban className='size-3' />
+              Cancelar
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Cancelar transcripcion</AlertDialogTitle>
+              <AlertDialogDescription>
+                Estas seguro? El archivo subido se eliminara y no se procesara.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Volver</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleCancel}
+                className='bg-destructive text-destructive-foreground hover:bg-destructive/90'
+              >
+                Cancelar
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
       <Button
         type='button'
         variant='outline'

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { ArrowRight, Loader2, ShieldCheck, Sparkles } from 'lucide-react'
 import { toast } from 'sonner'
+import type { AxiosError } from 'axios'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Input } from '@/components/ui/input'
@@ -30,18 +31,25 @@ const LANGUAGES = [
 ] as const
 
 export function TranscriptionForm() {
+  const MAX_FILE_BYTES = 200 * 1024 * 1024
+
   const [file, setFile] = useState<File | null>(null)
   const [context, setContext] = useState('')
   const [model, setModel] = useState<string>('small')
   const [language, setLanguage] = useState<string>('es')
   const [beamSize, setBeamSize] = useState(5)
   const [vadFilter, setVadFilter] = useState(true)
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null)
   const mutation = useCreateTranscription()
 
   function onSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!file) {
       toast.error('Selecciona un archivo')
+      return
+    }
+    if (file.size > MAX_FILE_BYTES) {
+      toast.error('El archivo excede el limite de 200 MB')
       return
     }
     const form = new FormData()
@@ -51,17 +59,22 @@ export function TranscriptionForm() {
     form.append('language', language)
     form.append('beam_size', String(beamSize))
     form.append('vad_filter', String(vadFilter))
-    mutation.mutate(form, {
-      onSuccess: () => {
-        toast.success('Transcripcion enviada a cola')
-        setFile(null)
+    mutation.mutate(
+      { form, onUploadProgress: setUploadProgress },
+      {
+        onSuccess: () => {
+          toast.success('Transcripcion enviada a cola')
+          setFile(null)
+          setUploadProgress(null)
+        },
+        onError: (err) => {
+          const axiosErr = err as AxiosError<{ detail?: string }>
+          const detail = axiosErr.response?.data?.detail
+          toast.error(detail ?? (err instanceof Error ? err.message : 'La transcripcion fallo'))
+          setUploadProgress(null)
+        },
       },
-      onError: (err) => {
-        toast.error(
-          err instanceof Error ? err.message : 'La transcripcion fallo',
-        )
-      },
-    })
+    )
   }
 
   return (
@@ -240,34 +253,54 @@ export function TranscriptionForm() {
         </div>
       </div>
 
-      <footer className='flex flex-col gap-4 border-t border-border/60 bg-background/30 p-5 sm:p-6 md:flex-row md:items-center md:justify-between md:p-8'>
-        <div className='flex flex-wrap items-center gap-3 font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground'>
-          <span className='flex items-center gap-1.5'>
-            <ShieldCheck className='size-3 text-signal' />
-            jwt · argon2
-          </span>
-          <span className='flex items-center gap-1.5'>
-            <Sparkles className='size-3 text-signal' />
-            faster-whisper · ctranslate2
-          </span>
-        </div>
-        <Button
-          type='submit'
-          disabled={mutation.isPending}
-          className='group h-12 overflow-hidden rounded-md bg-foreground px-6 text-background hover:bg-foreground/90'
-        >
-          <span className='absolute inset-y-0 left-0 w-1 bg-signal transition-all duration-500 group-hover:w-2' />
-          <span className='relative flex w-full items-center justify-between gap-3'>
-            <span className='font-mono text-[11px] uppercase tracking-[0.28em]'>
-              {mutation.isPending ? 'transcribiendo...' : 'transcribir audio'}
+      <footer className='flex flex-col gap-4 border-t border-border/60 bg-background/30 p-5 sm:p-6 md:p-8'>
+        {uploadProgress !== null && uploadProgress < 100 && (
+          <div className='space-y-1.5'>
+            <div className='flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground'>
+              <span>subiendo archivo</span>
+              <span className='text-signal'>{uploadProgress}%</span>
+            </div>
+            <div className='h-px w-full overflow-hidden rounded-full bg-border/60'>
+              <div
+                className='h-full bg-signal transition-all duration-300'
+                style={{ width: `${uploadProgress}%` }}
+              />
+            </div>
+          </div>
+        )}
+        <div className='flex flex-col gap-4 md:flex-row md:items-center md:justify-between'>
+          <div className='flex flex-wrap items-center gap-3 font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground'>
+            <span className='flex items-center gap-1.5'>
+              <ShieldCheck className='size-3 text-signal' />
+              jwt · argon2
             </span>
-            {mutation.isPending ? (
-              <Loader2 className='size-4 animate-spin' />
-            ) : (
-              <ArrowRight className='size-4 transition-transform duration-300 group-hover:translate-x-1' />
-            )}
-          </span>
-        </Button>
+            <span className='flex items-center gap-1.5'>
+              <Sparkles className='size-3 text-signal' />
+              faster-whisper · ctranslate2
+            </span>
+          </div>
+          <Button
+            type='submit'
+            disabled={mutation.isPending}
+            className='group h-12 overflow-hidden rounded-md bg-foreground px-6 text-background hover:bg-foreground/90'
+          >
+            <span className='absolute inset-y-0 left-0 w-1 bg-signal transition-all duration-500 group-hover:w-2' />
+            <span className='relative flex w-full items-center justify-between gap-3'>
+              <span className='font-mono text-[11px] uppercase tracking-[0.28em]'>
+                {uploadProgress !== null && uploadProgress < 100
+                  ? `subiendo ${uploadProgress}%`
+                  : mutation.isPending
+                    ? 'procesando...'
+                    : 'transcribir audio'}
+              </span>
+              {mutation.isPending ? (
+                <Loader2 className='size-4 animate-spin' />
+              ) : (
+                <ArrowRight className='size-4 transition-transform duration-300 group-hover:translate-x-1' />
+              )}
+            </span>
+          </Button>
+        </div>
       </footer>
     </form>
   )
