@@ -1,4 +1,4 @@
-import { Download, FileAudio, Loader2, Trash2 } from 'lucide-react'
+import { Download, FileAudio, Loader2, Trash2, Clock } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { SectionEyebrow, SignalChip } from '@/components/signal'
@@ -137,6 +137,16 @@ function MobileProcessList({
               <SignalChip variant='muted' pulse={false}>
                 beam {t.beam_size}
               </SignalChip>
+              <SignalChip variant='muted' pulse={false}>
+                <Clock className='h-3 w-3' />
+                {formatDuration(t.duration)}
+              </SignalChip>
+              <SignalChip variant='muted' pulse={t.status === 'processing'}>
+                {t.status === 'processing' && (
+                  <Loader2 className='h-3 w-3 animate-spin' />
+                )}
+                {formatProcessingTime(t.processing_time)}
+              </SignalChip>
             </div>
             {t.error_message && (
               <p className='text-xs text-destructive'>{t.error_message}</p>
@@ -166,12 +176,14 @@ function DesktopProcessTable({
 }) {
   return (
     <div className='hidden overflow-x-auto rounded-xl border border-border/60 bg-card/30 md:block'>
-      <table className='w-full min-w-[760px] text-sm'>
+      <table className='w-full min-w-[900px] text-sm'>
         <thead>
           <tr className='border-b border-border/60 text-left font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground'>
             <th className='px-4 py-3'>Archivo</th>
             <th className='px-4 py-3'>Estado</th>
             <th className='px-4 py-3'>Modelo</th>
+            <th className='px-4 py-3'>Duracion</th>
+            <th className='px-4 py-3'>Proceso</th>
             <th className='px-4 py-3'>Fecha</th>
             <th className='px-4 py-3 text-right'>Acciones</th>
           </tr>
@@ -233,6 +245,17 @@ function DesktopProcessTable({
                 </div>
               </td>
               <td className='px-4 py-4 font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground'>
+                {formatDuration(t.duration)}
+              </td>
+              <td className='px-4 py-4 font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground'>
+                <span className={cn(t.status === 'processing' && 'inline-flex items-center gap-1 text-signal')}>
+                  {t.status === 'processing' && (
+                    <Loader2 className='h-3 w-3 animate-spin' />
+                  )}
+                  {formatProcessingTime(t.processing_time)}
+                </span>
+              </td>
+              <td className='px-4 py-4 font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground'>
                 {new Date(t.created_at).toLocaleString()}
               </td>
               <td className='px-4 py-4'>
@@ -247,6 +270,21 @@ function DesktopProcessTable({
 }
 
 /* ============================== Helpers ============================== */
+
+function formatDuration(seconds: number | null): string {
+  if (seconds === null || seconds === undefined) return '—'
+  const m = Math.floor(seconds / 60)
+  const s = Math.floor(seconds % 60)
+  return `${m}:${s.toString().padStart(2, '0')}`
+}
+
+function formatProcessingTime(seconds: number | null): string {
+  if (seconds === null || seconds === undefined) return '—'
+  if (seconds < 60) return `${Math.round(seconds)}s`
+  const m = Math.floor(seconds / 60)
+  const s = Math.floor(seconds % 60)
+  return `${m}m ${s.toString().padStart(2, '0')}s`
+}
 
 function statusBar(status: Transcription['status']) {
   switch (status) {

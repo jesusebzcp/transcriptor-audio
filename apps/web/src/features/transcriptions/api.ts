@@ -16,6 +16,7 @@ export interface Transcription {
   created_at: string
   started_at: string | null
   completed_at: string | null
+  processing_time: number | null
 }
 
 export function useTranscriptions() {

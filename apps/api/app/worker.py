@@ -84,6 +84,8 @@ async def process_next_job() -> bool:
             job.duration = result.duration
             job.status = "completed"
             job.completed_at = datetime.now(timezone.utc)
+            if job.started_at:
+                job.processing_time = (job.completed_at - job.started_at).total_seconds()
             job.error_message = None
         except Exception as exc:  # noqa: BLE001 - persist worker failure for UI
             job.status = "failed"

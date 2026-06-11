@@ -64,6 +64,7 @@ class TranscriptionOut(BaseModel):
     created_at: datetime
     started_at: datetime | None
     completed_at: datetime | None
+    processing_time: float | None
 
 
 LoginResponse.model_rebuild()

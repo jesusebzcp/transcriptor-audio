@@ -44,5 +44,6 @@ class Transcription(Base):
     )
     started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    processing_time: Mapped[float | None] = mapped_column(nullable=True)
 
     user: Mapped[User] = relationship(back_populates="transcriptions")
