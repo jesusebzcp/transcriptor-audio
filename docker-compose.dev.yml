@@ -1,0 +1,88 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-transcriptor}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-transcriptor}
+      POSTGRES_DB: ${POSTGRES_DB:-transcriptor}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-transcriptor}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-transcriptor}:${POSTGRES_PASSWORD:-transcriptor}@postgres:5432/${POSTGRES_DB:-transcriptor}
+      UPLOAD_DIR: /tmp/coding-power-uploads
+    ports:
+      - "4001:8000"
+    volumes:
+      - ./apps/api/app:/app/app
+      - uploads_data:/tmp/coding-power-uploads
+      - whisper_cache:/root/.cache/huggingface
+
+  worker:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    command: python -m app.worker
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-transcriptor}:${POSTGRES_PASSWORD:-transcriptor}@postgres:5432/${POSTGRES_DB:-transcriptor}
+      UPLOAD_DIR: /tmp/coding-power-uploads
+    volumes:
+      - ./apps/api/app:/app/app
+      - uploads_data:/tmp/coding-power-uploads
+      - whisper_cache:/root/.cache/huggingface
+
+  web:
+    image: node:22-alpine
+    working_dir: /app
+    command: sh -c "corepack enable && pnpm install && CHOKIDAR_USEPOLLING=true pnpm dev --host 0.0.0.0"
+    develop:
+      watch:
+        - action: sync
+          path: ./apps/web
+          target: /app
+          ignore:
+            - node_modules
+            - dist
+    restart: unless-stopped
+    depends_on:
+      - api
+    env_file:
+      - .env
+    environment:
+      VITE_API_URL: ${VITE_API_URL:-http://localhost:4001}
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./apps/web:/app
+      - web_node_modules:/app/node_modules
+
+volumes:
+  postgres_data:
+  whisper_cache:
+  web_node_modules:
+  uploads_data:

@@ -1,0 +1,16 @@
+fastapi==0.118.0
+uvicorn[standard]==0.34.0
+pydantic[email]==2.11.7
+pydantic-settings==2.7.0
+sqlalchemy[asyncio]==2.0.36
+asyncpg==0.30.0
+alembic==1.14.0
+python-multipart==0.0.20
+passlib[argon2]==1.7.4
+argon2-cffi==23.1.0
+pyjwt==2.10.1
+python-dotenv==1.0.1
+faster-whisper==1.1.0
+requests==2.32.3
+tokenizers<1.0
+slowapi==0.1.9
