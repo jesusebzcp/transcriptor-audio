@@ -42,7 +42,7 @@
 
 ## Frontend Notes
 - TanStack Router is file-based. Routes live under `apps/web/src/routes`. After adding/removing route files, regenerate the tree with the TanStack Router plugin (or hand-edit `apps/web/src/routeTree.gen.ts` to match the current set: `/`, `/sign-in`, `/transcriptions`, `/users`).
-- `VITE_API_URL` must be set at build time. In Docker it is injected via `docker-compose.yml`; locally create `apps/web/.env` with `VITE_API_URL=http://localhost:8001`.
+- `VITE_API_URL` must be set at build time. In Docker it is injected via `docker-compose.yml`; locally create `apps/web/.env` with `VITE_API_URL=http://localhost:4001`.
 - In prod compose, `VITE_API_URL=` empty means same-origin calls; `apps/web/nginx.conf` proxies `/api/` to `api:8000`.
 - `pnpm` is required (template uses `pnpm-lock.yaml`).
 - The Clerk, demo dashboards, settings, tasks, chats, errors, help-center, apps pages were removed; if you need to add a page, prefer keeping the existing sidebar / layout components.

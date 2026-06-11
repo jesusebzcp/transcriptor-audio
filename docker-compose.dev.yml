@@ -31,7 +31,7 @@ services:
       DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-transcriptor}:${POSTGRES_PASSWORD:-transcriptor}@postgres:5432/${POSTGRES_DB:-transcriptor}
       UPLOAD_DIR: /tmp/coding-power-uploads
     ports:
-      - "8001:8000"
+      - "4001:8000"
     volumes:
       - ./apps/api/app:/app/app
       - uploads_data:/tmp/coding-power-uploads
@@ -74,7 +74,7 @@ services:
     env_file:
       - .env
     environment:
-      VITE_API_URL: ${VITE_API_URL:-http://localhost:8001}
+      VITE_API_URL: ${VITE_API_URL:-http://localhost:4001}
     ports:
       - "5173:5173"
     volumes:
