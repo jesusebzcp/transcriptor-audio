@@ -38,7 +38,15 @@ services:
   web:
     image: node:22-alpine
     working_dir: /app
-    command: sh -c "corepack enable && pnpm install && pnpm dev --host 0.0.0.0"
+    command: sh -c "corepack enable && pnpm install && CHOKIDAR_USEPOLLING=true pnpm dev --host 0.0.0.0"
+    develop:
+      watch:
+        - action: sync
+          path: ./apps/web
+          target: /app
+          ignore:
+            - node_modules
+            - dist
     restart: unless-stopped
     depends_on:
       - api
