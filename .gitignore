@@ -1,7 +1,46 @@
-
-.env
-firebase-key.json
-*.mp4
-*.mp3
-.venv/
 __pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+.env
+.env.local
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Node
+node_modules/
+dist/
+build/
+.vite/
+.cache/
+.pnpm-store/
+
+# Data
+postgres_data/
+whisper_cache/
+uploads/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+
+# Backend
+apps/api/.venv/
+apps/api/__pycache__/
+apps/api/**/__pycache__/
+apps/api/.env
+apps/api/uploads/
+apps/api/whisper_cache/
+
+# Frontend
+apps/web/node_modules/
+apps/web/dist/
+apps/web/.env
+apps/web/.env.local
